@@ -6,6 +6,7 @@ from typing import Optional
 class UserBase(BaseModel):
     username: str
     email: EmailStr
+    role: Optional[str] = "user"
 
 class UserCreate(UserBase):
     password: str
@@ -13,6 +14,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     public_key: str
+    role: str
 
     class Config:
         from_attributes = True

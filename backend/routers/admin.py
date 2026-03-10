@@ -4,12 +4,12 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import get_db
 import models, schemas
-from routers.auth import get_current_user
+from routers.auth import get_current_admin
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.get("/integrity-check", response_model=schemas.IntegrityReport)
-def integrity_check(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def integrity_check(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_admin)):
     """Comprehensive integrity check of all files stored on the server."""
     files = db.query(models.File).all()
     total_files = len(files)
@@ -41,13 +41,13 @@ def integrity_check(db: Session = Depends(get_db), current_user: models.User = D
     }
 
 @router.get("/logs", response_model=List[schemas.LogResponse])
-def get_logs(limit: int = 50, offset: int = 0, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def get_logs(limit: int = 50, offset: int = 0, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_admin)):
     """Retrieve the latest security events."""
     logs = db.query(models.Log).order_by(models.Log.timestamp.desc()).offset(offset).limit(limit).all()
     return logs
 
 @router.get("/stats", response_model=schemas.StatsResponse)
-def get_stats(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def get_stats(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_admin)):
     """Aggregated statistics for the Security Dashboard."""
     total_users = db.query(models.User).count()
     total_files = db.query(models.File).count()

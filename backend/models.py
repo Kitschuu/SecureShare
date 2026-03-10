@@ -11,6 +11,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     public_key = Column(String, nullable=False)  # PEM format RSA public key
+    role = Column(String, default="user", nullable=False) 
     
     # Relationships
     files_owned = relationship("File", back_populates="owner", cascade="all, delete-orphan")

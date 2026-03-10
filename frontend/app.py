@@ -19,76 +19,114 @@ if "access_token" not in st.session_state:
     st.session_state.access_token = None
 if "username" not in st.session_state:
     st.session_state.username = None
+if "role" not in st.session_state:
+    st.session_state.role = None
 
 def get_auth_headers():
     return {"Authorization": f"Bearer {st.session_state.access_token}"}
 
+def decode_jwt(token: str) -> dict:
+    """Helper to safely decode JWT payload on the frontend."""
+    try:
+        parts = token.split(".")
+        if len(parts) == 3:
+            payload_part = parts[1]
+            # Add padding if needed
+            padded = payload_part + "=" * ((4 - len(payload_part) % 4) % 4)
+            decoded_bytes = base64.urlsafe_b64decode(padded)
+            return json.loads(decoded_bytes)
+    except Exception as e:
+        print(f"Error decoding JWT: {e}")
+    return {}
+
 st.title("🔒 SecureShare - Zero Knowledge E2EE File Sharing")
 st.markdown("A highly secure, End-to-End Encrypted file sharing platform. Only you and your recipient hold the keys!")
 
-# --- UI TABS ---
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Login", "Register", "Send File", "Inbox", "Admin Dashboard"])
+# --- AUTH WALL ---
+if not st.session_state.access_token:
+    st.info("Please login or register to access the secure platform.")
+    tab1, tab2 = st.tabs(["Login", "Register"])
 
-# ----------------- TAB 1: LOGIN -----------------
-with tab1:
-    st.header("Login")
-    login_user = st.text_input("Username", key="login_user")
-    login_pass = st.text_input("Password", type="password", key="login_pass")
-    
-    if st.button("Login"):
-        resp = requests.post(f"{API_URL}/auth/login", data={"username": login_user, "password": login_pass})
-        if resp.status_code == 200:
-            token = resp.json().get("access_token")
-            st.session_state.access_token = token
-            st.session_state.username = login_user
-            st.success(f"Logged in successfully as {login_user}!")
-        else:
-            st.error("Invalid credentials")
+    # ----------------- TAB 1: LOGIN -----------------
+    with tab1:
+        st.header("Login")
+        login_user = st.text_input("Username", key="login_user")
+        login_pass = st.text_input("Password", type="password", key="login_pass")
+        
+        if st.button("Login"):
+            resp = requests.post(f"{API_URL}/auth/login", data={"username": login_user, "password": login_pass})
+            if resp.status_code == 200:
+                token = resp.json().get("access_token")
+                st.session_state.access_token = token
+                st.session_state.username = login_user
+                
+                # Fetch Role from Token
+                decoded_payload = decode_jwt(token)
+                st.session_state.role = decoded_payload.get("role", "user")
+                
+                st.success(f"Logged in successfully as {login_user}!")
+                st.rerun()
+            else:
+                st.error("Invalid credentials")
 
-# ----------------- TAB 2: REGISTER -----------------
-with tab2:
-    st.header("Register")
-    st.info("Registration generates a new 2048-bit RSA Key Pair. We only store your Public Key.")
-    
-    reg_user = st.text_input("Username", key="reg_user")
-    reg_email = st.text_input("Email", key="reg_email")
-    reg_pass = st.text_input("Password", type="password", key="reg_pass")
-    
-    if st.button("Register"):
-        payload = {"username": reg_user, "email": reg_email, "password": reg_pass}
-        print(payload)
-        resp = requests.post(f"{API_URL}/auth/register", json=payload)
+    # ----------------- TAB 2: REGISTER -----------------
+    with tab2:
+        st.header("Register")
+        st.info("Registration generates a new 2048-bit RSA Key Pair. We only store your Public Key.")
         
+        reg_user = st.text_input("Username", key="reg_user")
+        reg_email = st.text_input("Email", key="reg_email")
+        reg_pass = st.text_input("Password", type="password", key="reg_pass")
         
-        if resp.status_code == 201:
-            data = resp.json()
-            st.success(data["message"])
-            st.warning(data["instructions"])
+        if st.button("Register"):
+            payload = {"username": reg_user, "email": reg_email, "password": reg_pass}
+            resp = requests.post(f"{API_URL}/auth/register", json=payload)
             
-            # Immediately prompt user to download their private key (.pem)
-            st.download_button(
-                label="Download Private Key (.pem)",
-                data=data["private_key"],
-                file_name=f"{reg_user}_private_key.pem",
-                mime="application/x-pem-file"
-            )
-        else:
-            try:
-                st.error(resp.json().get("detail", "Registration failed"))
-            except ValueError:
-                st.error(f"Error from server: {resp.text}")
+            if resp.status_code == 201:
+                data = resp.json()
+                st.success(data["message"])
+                st.warning(data["instructions"])
+                
+                st.download_button(
+                    label="Download Private Key (.pem)",
+                    data=data["private_key"],
+                    file_name=f"{reg_user}_private_key.pem",
+                    mime="application/x-pem-file"
+                )
+            else:
+                try:
+                    st.error(resp.json().get("detail", "Registration failed"))
+                except ValueError:
+                    st.error(f"Error from server: {resp.text}")
 
-# ----------------- TAB 3: SEND FILE -----------------
-with tab3:
-    st.header("Securely Share a File")
-    if not st.session_state.access_token:
-        st.warning("Please login first to send files.")
-    else:
-        # Fetch available users
+else:
+    # --- AUTHENTICATED STATE: SIDEBAR NAVIGATION ---
+    st.sidebar.title(f"Welcome, {st.session_state.username}!")
+    st.sidebar.write(f"**Role:** {st.session_state.role.capitalize()}")
+    st.sidebar.divider()
+    
+    # Establish Navigation Options Based on Role
+    nav_options = ["Share a File", "Secure Inbox"]
+    
+    if st.session_state.role == "admin":
+        nav_options.append("Admin Dashboard")
+        
+    choice = st.sidebar.radio("Navigation", nav_options)
+    
+    st.sidebar.divider()
+    if st.sidebar.button("Logout"):
+        st.session_state.access_token = None
+        st.session_state.username = None
+        st.session_state.role = None
+        st.rerun()
+
+    # ----------------- PAGE: SEND FILE -----------------
+    if choice == "Share a File":
+        st.header("Securely Share a File")
+        
         users_resp = requests.get(f"{API_URL}/users")
         if users_resp.status_code == 200:
             users = users_resp.json()
-            # Map usernames to a tuple of (id, public_key)
             user_options = {u["username"]: (u["id"], u["public_key"]) for u in users if u["username"] != st.session_state.username}
             
             selected_user = st.selectbox("Select Recipient", [""] + list(user_options.keys()))
@@ -100,33 +138,28 @@ with tab3:
                 file_data = file_to_send.read()
                 
                 try:
-                    # Parse keys
                     sender_private_key = RSA.import_key(sender_private_key_file.read())
                     receiver_public_key = RSA.import_key(receiver_pub_key_pem)
                     
-                    # --- CRYPTOGRAPHIC FLOW (CLIENT-SIDE ONLY) ---
                     # 1. Generate AES-256 session key
                     session_key = get_random_bytes(32)
                     
                     # 2. Encrypt the file using AES-GCM
                     cipher_aes = AES.new(session_key, AES.MODE_GCM)
                     ciphertext, tag = cipher_aes.encrypt_and_digest(file_data)
-                    # Create the full payload: nonce (16 bytes) + tag (16 bytes) + ciphertext
                     encrypted_file_blob = cipher_aes.nonce + tag + ciphertext
                     
                     # 3. Encrypt the AES session key using Recipient's RSA Public Key
                     cipher_rsa = PKCS1_OAEP.new(receiver_public_key)
                     encrypted_aes_key = cipher_rsa.encrypt(session_key)
                     
-                    # 4. Digital Signature: Hash the encrypted blob and sign with Sender's Private Key
+                    # 4. Digital Signature
                     file_hash = SHA256.new(encrypted_file_blob)
                     signature = pkcs1_15.new(sender_private_key).sign(file_hash)
                     
-                    # Format for transmission
                     enc_aes_key_b64 = base64.b64encode(encrypted_aes_key).decode('utf-8')
                     signature_b64 = base64.b64encode(signature).decode('utf-8')
                     
-                    # Transmit to Server via multipart form
                     files = {"file": (file_to_send.name, encrypted_file_blob, "application/octet-stream")}
                     data = {
                         "receiver_id": receiver_id,
@@ -143,12 +176,10 @@ with tab3:
                 except Exception as e:
                     st.error(f"Encryption failed. Did you upload the correct Private Key? Error: {str(e)}")
 
-# ----------------- TAB 4: INBOX -----------------
-with tab4:
-    st.header("Your Secure Inbox")
-    if not st.session_state.access_token:
-        st.warning("Please login to view your shared files.")
-    else:
+    # ----------------- PAGE: INBOX -----------------
+    elif choice == "Secure Inbox":
+        st.header("Your Secure Inbox")
+        
         resp = requests.get(f"{API_URL}/files/shared", headers=get_auth_headers())
         if resp.status_code == 200:
             shared_files = resp.json()
@@ -160,33 +191,29 @@ with tab4:
                     receiver_priv_key_file = st.file_uploader(f"Upload your Private Key to Decrypt", type=["pem"], key=f"key_{sf['share_id']}_{index}")
                     
                     if st.button("Verify Signature & Decrypt", key=f"btn_{sf['share_id']}_{index}") and receiver_priv_key_file:
-                        # Fetch the zero-knowledge payload from the backend
                         dl_resp = requests.get(f"{API_URL}/files/download/{sf['share_id']}", headers=get_auth_headers())
                         
                         if dl_resp.status_code == 200:
                             payload = dl_resp.json()
                             
                             try:
-                                # Extract payload
                                 enc_file_blob = base64.b64decode(payload["encrypted_file_blob"])
                                 enc_aes_key = base64.b64decode(payload["encrypted_aes_key"])
                                 signature = base64.b64decode(payload["digital_signature"])
                                 
-                                # Parse keys
                                 sender_pub_key = RSA.import_key(payload["sender_public_key"])
                                 receiver_priv_key = RSA.import_key(receiver_priv_key_file.read())
                                 
-                                # --- CRYPTOGRAPHIC FLOW (CLIENT-SIDE ONLY) ---
-                                # 1. Verify Digital Signature FIRST to ensure integrity
+                                # 1. Verify Digital Signature
                                 file_hash = SHA256.new(enc_file_blob)
                                 pkcs1_15.new(sender_pub_key).verify(file_hash, signature)
                                 st.success("✅ Digital Signature Verified! The file originates from the true sender and hasn't been tampered with.")
                                 
-                                # 2. Decrypt AES Key using Receiver's Private Key
+                                # 2. Decrypt AES Key
                                 cipher_rsa = PKCS1_OAEP.new(receiver_priv_key)
                                 session_key = cipher_rsa.decrypt(enc_aes_key)
                                 
-                                # 3. Decrypt the File using the AES Key (GCM Mode)
+                                # 3. Decrypt the File
                                 nonce = enc_file_blob[:16]
                                 tag = enc_file_blob[16:32]
                                 ciphertext = enc_file_blob[32:]
@@ -211,59 +238,60 @@ with tab4:
         else:
             st.error("Failed to fetch shared files (Check Server Connection).")
 
-# ----------------- TAB 5: ADMIN DASHBOARD -----------------
-with tab5:
-    st.header("Security & Audit Dashboard")
-    if not st.session_state.access_token:
-        st.warning("Please login to access the admin dashboard.")
-    else:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("Global Statistics")
-            if st.button("Refresh Stats"):
-                stats_resp = requests.get(f"{API_URL}/admin/stats", headers=get_auth_headers())
-                if stats_resp.status_code == 200:
-                    stats = stats_resp.json()
-                    c1, c2 = st.columns(2)
-                    c1.metric("Registered Users", stats["total_users"])
-                    c2.metric("Total Encrypted Files", stats["total_files"])
-                    
-                    c3, c4 = st.columns(2)
-                    c3.metric("Active Shares", stats["total_shares"])
-                    c4.metric("Total Actions", stats["total_actions"])
-                else:
-                    st.error("Stats disabled for regular users or server error.")
-        
-        with col2:
-            st.subheader("Server File Integrity Matcher")
-            st.info("Scan physical server blobs against their initial upload database hashes to detect backend server tampering.")
-            if st.button("Run Deep Integrity Check"):
-                int_resp = requests.get(f"{API_URL}/admin/integrity-check", headers=get_auth_headers())
-                if int_resp.status_code == 200:
-                    report = int_resp.json()
-                    st.write(f"**Total Files Checked Server-Side:** {report['total_files']}")
-                    
-                    if report['compromised_files']:
-                        st.error(f"🚨 ALERT: {len(report['compromised_files'])} file(s) corrupted or modified at rest!")
-                        st.json(report['compromised_files'])
+    # ----------------- PAGE: ADMIN DASHBOARD -----------------
+    elif choice == "Admin Dashboard":
+        # Additional safety check (Frontend validation)
+        if st.session_state.role != "admin":
+            st.error("You are not authorized to view this page.")
+        else:
+            st.header("Security & Audit Dashboard")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("Global Statistics")
+                if st.button("Refresh Stats", key="refresh_stats"):
+                    stats_resp = requests.get(f"{API_URL}/admin/stats", headers=get_auth_headers())
+                    if stats_resp.status_code == 200:
+                        stats = stats_resp.json()
+                        c1, c2 = st.columns(2)
+                        c1.metric("Registered Users", stats["total_users"])
+                        c2.metric("Total Encrypted Files", stats["total_files"])
+                        
+                        c3, c4 = st.columns(2)
+                        c3.metric("Active Shares", stats["total_shares"])
+                        c4.metric("Total Actions", stats["total_actions"])
                     else:
-                        st.success("✅ Safe: All physical files perfectly match their un-tampered encrypted states.")
+                        st.error("Stats disabled for regular users or server error.")
+            
+            with col2:
+                st.subheader("Server File Integrity Matcher")
+                st.info("Scan physical server blobs against their initial upload database hashes to detect backend server tampering.")
+                if st.button("Run Deep Integrity Check"):
+                    int_resp = requests.get(f"{API_URL}/admin/integrity-check", headers=get_auth_headers())
+                    if int_resp.status_code == 200:
+                        report = int_resp.json()
+                        st.write(f"**Total Files Checked Server-Side:** {report['total_files']}")
+                        
+                        if report['compromised_files']:
+                            st.error(f"🚨 ALERT: {len(report['compromised_files'])} file(s) corrupted or modified at rest!")
+                            st.json(report['compromised_files'])
+                        else:
+                            st.success("✅ Safe: All physical files perfectly match their un-tampered encrypted states.")
+                    else:
+                        st.error(f"Integrity check failed. Unauthorized. ({int_resp.status_code})")
+                        
+            st.divider()
+            st.subheader("System Audit Logs")
+            if st.button("Load Recent Audit Trail"):
+                logs_resp = requests.get(f"{API_URL}/admin/logs?limit=50", headers=get_auth_headers())
+                if logs_resp.status_code == 200:
+                    logs = logs_resp.json()
+                    if logs:
+                        df = pd.DataFrame(logs)
+                        df['timestamp'] = pd.to_datetime(df['timestamp']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                        st.dataframe(df[['timestamp', 'action', 'user_id']], use_container_width=True)
+                    else:
+                        st.info("No logs present.")
                 else:
-                    st.error("Integrity check failed. Unauthorized.")
-                    
-        st.divider()
-        st.subheader("System Audit Logs")
-        if st.button("Load Recent Audit Trail"):
-            logs_resp = requests.get(f"{API_URL}/admin/logs?limit=50", headers=get_auth_headers())
-            if logs_resp.status_code == 200:
-                logs = logs_resp.json()
-                if logs:
-                    df = pd.DataFrame(logs)
-                    # Formatting to make it prettier
-                    df['timestamp'] = pd.to_datetime(df['timestamp']).dt.strftime('%Y-%m-%d %H:%M:%S')
-                    st.dataframe(df[['timestamp', 'action', 'user_id']], use_container_width=True)
-                else:
-                    st.info("No logs present.")
-            else:
-                st.error("Failed to load audit trail.")
+                    st.error("Failed to load audit trail.")

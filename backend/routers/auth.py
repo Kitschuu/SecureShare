@@ -40,6 +40,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
+def get_current_admin(current_user: models.User = Depends(get_current_user)):
+    """Dependency to restrict access to users with the 'admin' role."""
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource"
+        )
+    return current_user
+
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """Registers a new user, generating an RSA key pair."""
@@ -57,11 +66,13 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     private_key, public_key = generate_rsa_key_pair()
     
     # Create new user record (ONLY store the public key)
+    # Default role assigned in schemas models/DB
     new_user = models.User(
         username=user.username,
         email=user.email,
         password_hash=hashed_password,
-        public_key=public_key
+        public_key=public_key,
+        role=user.role if user.role else "user"
     )
     db.add(new_user)
     db.commit()
@@ -94,10 +105,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Generate JWT access token
+    # Generate JWT access token with Role Payload
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.username, "role": user.role}, expires_delta=access_token_expires
     )
     
     # Log the action (Audit Logging)
