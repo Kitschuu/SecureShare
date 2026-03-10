@@ -10,21 +10,26 @@ from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
 from dotenv import load_dotenv
+from streamlit_cookies_controller import CookieController
 
 load_dotenv()
 
 # --- API CONFIGURATION ---
-API_URL = os.getenv("API_URL")
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="SecureShare - E2EE", layout="wide")
 
+# --- COOKIE CONTROLLER ---
+controller = CookieController()
+
 # --- SESSION STATE ---
+# Initialize session state from cookies first, then default
 if "access_token" not in st.session_state:
-    st.session_state.access_token = None
+    st.session_state.access_token = controller.get("access_token") 
 if "username" not in st.session_state:
-    st.session_state.username = None
+    st.session_state.username = controller.get("username")
 if "role" not in st.session_state:
-    st.session_state.role = None
+    st.session_state.role = controller.get("role")
 
 def get_auth_headers():
     return {"Authorization": f"Bearer {st.session_state.access_token}"}
@@ -66,7 +71,13 @@ if not st.session_state.access_token:
                 
                 # Fetch Role from Token
                 decoded_payload = decode_jwt(token)
-                st.session_state.role = decoded_payload.get("role", "user")
+                role = decoded_payload.get("role", "user")
+                st.session_state.role = role
+                
+                # Save to cookies
+                controller.set("access_token", token)
+                controller.set("username", login_user)
+                controller.set("role", role)
                 
                 st.success(f"Logged in successfully as {login_user}!")
                 st.rerun()
@@ -122,6 +133,11 @@ else:
         st.session_state.access_token = None
         st.session_state.username = None
         st.session_state.role = None
+        
+        # Remove cookies
+        controller.remove("access_token")
+        controller.remove("username")
+        controller.remove("role")
         st.rerun()
 
     # ----------------- PAGE: SEND FILE -----------------
