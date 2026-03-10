@@ -2,6 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 pydantic
+pydantic[email]
 python-jose
 passlib
 python-multipart
@@ -10,4 +11,6 @@ requests
 pandas
 pycryptodome
 python-dotenv
+bcrypt
+pyjwt
 psycopg2-binary
