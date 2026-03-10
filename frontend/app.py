@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import requests
 import base64
@@ -8,9 +9,12 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # --- API CONFIGURATION ---
-API_URL = "http://localhost:8000"
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="SecureShare - E2EE", layout="wide")
 

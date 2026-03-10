@@ -1,14 +1,18 @@
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 import bcrypt
 import hashlib
 from Crypto.PublicKey import RSA
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configuration (In production, load these from environment variables)
-SECRET_KEY = "super-secret-key-change-me"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-change-me")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
 def get_password_hash(password: str) -> str:
     # Hash with SHA-256 first to avoid bcrypt's 72-byte limit
