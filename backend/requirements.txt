@@ -10,3 +10,4 @@ requests
 pandas
 pycryptodome
 python-dotenv
+psycopg2-binary

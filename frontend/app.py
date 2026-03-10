@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- API CONFIGURATION ---
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+API_URL = os.getenv("API_URL")
 
 st.set_page_config(page_title="SecureShare - E2EE", layout="wide")
 
