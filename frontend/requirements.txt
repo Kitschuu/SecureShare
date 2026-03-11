@@ -10,4 +10,4 @@ requests
 pandas
 pycryptodome
 python-dotenv
-streamlit_cookies_controller
+extra-streamlit-components

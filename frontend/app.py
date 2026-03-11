@@ -10,7 +10,7 @@ from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
 from dotenv import load_dotenv
-from streamlit_cookies_controller import CookieController
+import extra_streamlit_components as stx
 
 load_dotenv()
 
@@ -20,16 +20,29 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")
 st.set_page_config(page_title="SecureShare - E2EE", layout="wide")
 
 # --- COOKIE CONTROLLER ---
-controller = CookieController()
+@st.cache_resource(experimental_allow_widgets=True)
+def get_manager():
+    return stx.CookieManager()
+
+cookie_manager = get_manager()
 
 # --- SESSION STATE ---
-# Initialize session state from cookies first, then default
+# Initialize session state defaults
 if "access_token" not in st.session_state:
-    st.session_state.access_token = controller.get("access_token")
+    st.session_state.access_token = None
 if "username" not in st.session_state:
-    st.session_state.username = controller.get("username")
+    st.session_state.username = None
 if "role" not in st.session_state:
-    st.session_state.role = controller.get("role")
+    st.session_state.role = None
+
+# Streamlit components are asynchronous. On the very first run (refresh), 
+# cookie_manager.get() might return None. When the component mounts and returns the cookie, 
+# it triggers a rerun. We must adopt the cookie if we are currently logged out.
+cookie_token = cookie_manager.get("access_token")
+if cookie_token and not st.session_state.access_token:
+    st.session_state.access_token = cookie_token
+    st.session_state.username = cookie_manager.get("username")
+    st.session_state.role = cookie_manager.get("role")
 
 def get_auth_headers():
     return {"Authorization": f"Bearer {st.session_state.access_token}"}
@@ -76,9 +89,9 @@ if not st.session_state.access_token:
                     st.session_state.role = role
                     
                     # Save to cookies correctly
-                    controller.set("access_token", token)
-                    controller.set("username", login_user)
-                    controller.set("role", role)
+                    cookie_manager.set("access_token", token)
+                    cookie_manager.set("username", login_user)
+                    cookie_manager.set("role", role)
                     
                     # Need to wait for cookie to be set before rerun, 
                     # but Streamlit Cookies Controller applies it immediately in JS.
@@ -144,9 +157,9 @@ else:
         st.session_state.role = None
         
         # Remove cookies
-        controller.remove("access_token")
-        controller.remove("username")
-        controller.remove("role")
+        cookie_manager.delete("access_token")
+        cookie_manager.delete("username")
+        cookie_manager.delete("role")
         
         # Clear out session state immediately so the UI reflects the logged-out state.
         for key in ["access_token", "username", "role"]:
@@ -162,7 +175,7 @@ else:
             users_resp = requests.get(f"{API_URL}/users", headers=get_auth_headers(), timeout=10)
             if users_resp.status_code == 401:
                 st.session_state.access_token = None
-                controller.remove("access_token")
+                cookie_manager.delete("access_token")
                 st.toast("Session expired. Please log in again.", icon="⏰")
                 st.rerun()
             elif users_resp.status_code == 200:
@@ -220,7 +233,7 @@ else:
                         resp = requests.post(f"{API_URL}/files/share", headers=get_auth_headers(), data=data, files=files, timeout=10)
                         if resp.status_code == 401:
                             st.session_state.access_token = None
-                            controller.remove("access_token")
+                            cookie_manager.delete("access_token")
                             st.toast("Session expired. Please log in again.", icon="⏰")
                             st.rerun()
                         elif resp.status_code == 200:
@@ -240,7 +253,7 @@ else:
             resp = requests.get(f"{API_URL}/files/shared", headers=get_auth_headers(), timeout=10)
             if resp.status_code == 401:
                 st.session_state.access_token = None
-                controller.remove("access_token")
+                cookie_manager.delete("access_token")
                 st.toast("Session expired. Please log in again.", icon="⏰")
                 st.rerun()
             elif resp.status_code == 200:
@@ -266,7 +279,7 @@ else:
                             
                             if dl_resp.status_code == 401:
                                 st.session_state.access_token = None
-                                controller.remove("access_token")
+                                cookie_manager.delete("access_token")
                                 st.toast("Session expired. Please log in again.", icon="⏰")
                                 st.rerun()
                             elif dl_resp.status_code == 200:
@@ -334,7 +347,7 @@ else:
                         stats_resp = requests.get(f"{API_URL}/admin/stats", headers=get_auth_headers(), timeout=10)
                         if stats_resp.status_code == 401:
                             st.session_state.access_token = None
-                            controller.remove("access_token")
+                            cookie_manager.delete("access_token")
                             st.toast("Session expired. Please log in again.", icon="⏰")
                             st.rerun()
                         elif stats_resp.status_code == 200:
@@ -359,7 +372,7 @@ else:
                         int_resp = requests.get(f"{API_URL}/admin/integrity-check", headers=get_auth_headers(), timeout=30)
                         if int_resp.status_code == 401:
                             st.session_state.access_token = None
-                            controller.remove("access_token")
+                            cookie_manager.delete("access_token")
                             st.toast("Session expired. Please log in again.", icon="⏰")
                             st.rerun()
                         elif int_resp.status_code == 200:
@@ -383,7 +396,7 @@ else:
                     logs_resp = requests.get(f"{API_URL}/admin/logs?limit=50", headers=get_auth_headers(), timeout=10)
                     if logs_resp.status_code == 401:
                         st.session_state.access_token = None
-                        controller.remove("access_token")
+                        cookie_manager.delete("access_token")
                         st.toast("Session expired. Please log in again.", icon="⏰")
                         st.rerun()
                     elif logs_resp.status_code == 200:
