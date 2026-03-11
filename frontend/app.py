@@ -31,24 +31,6 @@ for key in ["access_token", "username", "role", "logout_pending"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
-# Streamlit components load asynchronously on the frontend.
-# The very first time the script runs (app refresh), get_all() might technically be empty for a brief moment in Python,
-# but usually extra-streamlit-components handles this by triggering a rerun when the browser sends the cookies over.
-cookies = cookie_manager.get_all()
-
-# If the user has just clicked logout, we shouldn't attempt to restore from cookies.
-if not st.session_state.logout_pending:
-    if "access_token" in cookies and st.session_state.access_token is None:
-        st.session_state.access_token = cookies.get("access_token")
-        st.session_state.username = cookies.get("username")
-        st.session_state.role = cookies.get("role")
-        
-        # We trigger a rerun here so the UI actually registers the auth state change immediately
-        st.rerun()
-
-def get_auth_headers():
-    return {"Authorization": f"Bearer {st.session_state.access_token}"}
-
 def decode_jwt(token: str) -> dict:
     """Helper to safely decode JWT payload on the frontend."""
     try:
@@ -62,6 +44,31 @@ def decode_jwt(token: str) -> dict:
     except Exception as e:
         print(f"Error decoding JWT: {e}")
     return {}
+
+# Streamlit components load asynchronously on the frontend.
+# The very first time the script runs (app refresh), get_all() might technically be empty for a brief moment in Python,
+# but usually extra-streamlit-components handles this by triggering a rerun when the browser sends the cookies over.
+cookies = cookie_manager.get_all()
+
+# If the user has just clicked logout, we shouldn't attempt to restore from cookies.
+if not st.session_state.logout_pending:
+    if "access_token" in cookies and st.session_state.access_token is None:
+        token = cookies.get("access_token")
+        st.session_state.access_token = token
+        
+        # Decode the JWT to retrieve the true role and username directly,
+        # fallback to the local cookies if not present in the payload
+        decoded = decode_jwt(token)
+        st.session_state.username = decoded.get("sub", cookies.get("username"))
+        st.session_state.role = decoded.get("role", cookies.get("role"))
+        
+        # We trigger a rerun here so the UI actually registers the auth state change immediately
+        st.rerun()
+
+def get_auth_headers():
+    return {"Authorization": f"Bearer {st.session_state.access_token}"}
+
+# Moved to top for session state usage
 
 st.title("🔒 SecureShare - Zero Knowledge E2EE File Sharing")
 st.markdown("A highly secure, End-to-End Encrypted file sharing platform. Only you and your recipient hold the keys!")
