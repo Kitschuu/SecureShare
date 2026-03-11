@@ -20,7 +20,6 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")
 st.set_page_config(page_title="SecureShare - E2EE", layout="wide")
 
 # --- COOKIE CONTROLLER ---
-@st.cache_resource
 def get_manager():
     return stx.CookieManager()
 
