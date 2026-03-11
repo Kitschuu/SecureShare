@@ -24,8 +24,12 @@ controller = CookieController()
 
 # --- SESSION STATE ---
 # Initialize session state from cookies first, then default
+# Wait for cookies to be ready before proceeding
+if not controller.ready():
+    st.stop()
+    
 if "access_token" not in st.session_state:
-    st.session_state.access_token = controller.get("access_token") 
+    st.session_state.access_token = controller.get("access_token")
 if "username" not in st.session_state:
     st.session_state.username = controller.get("username")
 if "role" not in st.session_state:
@@ -75,11 +79,13 @@ if not st.session_state.access_token:
                     role = decoded_payload.get("role", "user")
                     st.session_state.role = role
                     
-                    # Save to cookies
+                    # Save to cookies correctly
                     controller.set("access_token", token)
                     controller.set("username", login_user)
                     controller.set("role", role)
                     
+                    # Need to wait for cookie to be set before rerun, 
+                    # but Streamlit Cookies Controller applies it immediately in JS.
                     st.success(f"Logged in successfully as {login_user}!")
                     st.rerun()
                 else:
@@ -145,6 +151,11 @@ else:
         controller.remove("access_token")
         controller.remove("username")
         controller.remove("role")
+        
+        # Clear out session state immediately so the UI reflects the logged-out state.
+        for key in ["access_token", "username", "role"]:
+            st.session_state.pop(key, None)
+            
         st.rerun()
 
     # ----------------- PAGE: SEND FILE -----------------
