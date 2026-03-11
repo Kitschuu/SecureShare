@@ -63,26 +63,30 @@ if not st.session_state.access_token:
         login_pass = st.text_input("Password", type="password", key="login_pass")
         
         if st.button("Login"):
-            resp = requests.post(f"{API_URL}/auth/login", data={"username": login_user, "password": login_pass})
-            if resp.status_code == 200:
-                token = resp.json().get("access_token")
-                st.session_state.access_token = token
-                st.session_state.username = login_user
-                
-                # Fetch Role from Token
-                decoded_payload = decode_jwt(token)
-                role = decoded_payload.get("role", "user")
-                st.session_state.role = role
-                
-                # Save to cookies
-                controller.set("access_token", token)
-                controller.set("username", login_user)
-                controller.set("role", role)
-                
-                st.success(f"Logged in successfully as {login_user}!")
-                st.rerun()
-            else:
-                st.error("Invalid credentials")
+            try:
+                resp = requests.post(f"{API_URL}/auth/login", data={"username": login_user, "password": login_pass}, timeout=10)
+                if resp.status_code == 200:
+                    token = resp.json().get("access_token")
+                    st.session_state.access_token = token
+                    st.session_state.username = login_user
+                    
+                    # Fetch Role from Token
+                    decoded_payload = decode_jwt(token)
+                    role = decoded_payload.get("role", "user")
+                    st.session_state.role = role
+                    
+                    # Save to cookies
+                    controller.set("access_token", token)
+                    controller.set("username", login_user)
+                    controller.set("role", role)
+                    
+                    st.success(f"Logged in successfully as {login_user}!")
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials")
+            except requests.exceptions.RequestException as e:
+                st.error("Could not connect to the backend server. Please try again later.")
+                st.toast("Connection Error", icon="🔌")
 
     # ----------------- TAB 2: REGISTER -----------------
     with tab2:
@@ -95,24 +99,27 @@ if not st.session_state.access_token:
         
         if st.button("Register"):
             payload = {"username": reg_user, "email": reg_email, "password": reg_pass}
-            resp = requests.post(f"{API_URL}/auth/register", json=payload)
-            
-            if resp.status_code == 201:
-                data = resp.json()
-                st.success(data["message"])
-                st.warning(data["instructions"])
+            try:
+                resp = requests.post(f"{API_URL}/auth/register", json=payload, timeout=10)
                 
-                st.download_button(
-                    label="Download Private Key (.pem)",
-                    data=data["private_key"],
-                    file_name=f"{reg_user}_private_key.pem",
-                    mime="application/x-pem-file"
-                )
-            else:
-                try:
-                    st.error(resp.json().get("detail", "Registration failed"))
-                except ValueError:
-                    st.error(f"Error from server: {resp.text}")
+                if resp.status_code == 201:
+                    data = resp.json()
+                    st.success(data["message"])
+                    st.warning(data["instructions"])
+                    
+                    st.download_button(
+                        label="Download Private Key (.pem)",
+                        data=data["private_key"],
+                        file_name=f"{reg_user}_private_key.pem",
+                        mime="application/x-pem-file"
+                    )
+                else:
+                    try:
+                        st.error(resp.json().get("detail", "Registration failed"))
+                    except ValueError:
+                        st.error(f"Error from server: {resp.text}")
+            except requests.exceptions.RequestException as e:
+                st.error("Could not connect to the backend server for registration.")
 
 else:
     # --- AUTHENTICATED STATE: SIDEBAR NAVIGATION ---
@@ -144,10 +151,24 @@ else:
     if choice == "Share a File":
         st.header("Securely Share a File")
         
-        users_resp = requests.get(f"{API_URL}/users")
-        if users_resp.status_code == 200:
-            users = users_resp.json()
-            user_options = {u["username"]: (u["id"], u["public_key"]) for u in users if u["username"] != st.session_state.username}
+        try:
+            users_resp = requests.get(f"{API_URL}/users", headers=get_auth_headers(), timeout=10)
+            if users_resp.status_code == 401:
+                st.session_state.access_token = None
+                controller.remove("access_token")
+                st.toast("Session expired. Please log in again.", icon="⏰")
+                st.rerun()
+            elif users_resp.status_code == 200:
+                users = users_resp.json()
+                user_options = {u["username"]: (u["id"], u["public_key"]) for u in users if u["username"] != st.session_state.username}
+            else:
+                st.error("Failed to load users.")
+                user_options = {}
+        except requests.exceptions.RequestException:
+            st.error("Failed to connect to the backend.")
+            user_options = {}
+
+        if user_options:
             
             selected_user = st.selectbox("Select Recipient", [""] + list(user_options.keys()))
             file_to_send = st.file_uploader("1. Choose a file to send")
@@ -188,11 +209,19 @@ else:
                         "filename": file_to_send.name
                     }
                     
-                    resp = requests.post(f"{API_URL}/files/share", headers=get_auth_headers(), data=data, files=files)
-                    if resp.status_code == 200:
-                        st.success("File encrypted, digitally signed, and securely sent!")
-                    else:
-                        st.error(f"Server error: {resp.text}")
+                    try:
+                        resp = requests.post(f"{API_URL}/files/share", headers=get_auth_headers(), data=data, files=files, timeout=10)
+                        if resp.status_code == 401:
+                            st.session_state.access_token = None
+                            controller.remove("access_token")
+                            st.toast("Session expired. Please log in again.", icon="⏰")
+                            st.rerun()
+                        elif resp.status_code == 200:
+                            st.success("File encrypted, digitally signed, and securely sent!")
+                        else:
+                            st.error(f"Server error: {resp.text}")
+                    except requests.exceptions.RequestException:
+                        st.error("Network error while sending the file.")
                 except Exception as e:
                     st.error(f"Encryption failed. Did you upload the correct Private Key? Error: {str(e)}")
 
@@ -200,21 +229,41 @@ else:
     elif choice == "Secure Inbox":
         st.header("Your Secure Inbox")
         
-        resp = requests.get(f"{API_URL}/files/shared", headers=get_auth_headers())
-        if resp.status_code == 200:
-            shared_files = resp.json()
-            if not shared_files:
-                st.info("No files shared with you yet.")
+        try:
+            resp = requests.get(f"{API_URL}/files/shared", headers=get_auth_headers(), timeout=10)
+            if resp.status_code == 401:
+                st.session_state.access_token = None
+                controller.remove("access_token")
+                st.toast("Session expired. Please log in again.", icon="⏰")
+                st.rerun()
+            elif resp.status_code == 200:
+                shared_files = resp.json()
+                if not shared_files:
+                    st.info("No files shared with you yet.")
+            else:
+                st.error("Failed to fetch shared files.")
+                shared_files = []
+        except requests.exceptions.RequestException:
+            st.error("Failed to fetch shared files (Check Server Connection).")
+            shared_files = []
+        
+        if shared_files:
             
             for index, sf in enumerate(shared_files):
                 with st.expander(f"📁 {sf['filename']} (From: {sf['sender_username']})"):
                     receiver_priv_key_file = st.file_uploader(f"Upload your Private Key to Decrypt", type=["pem"], key=f"key_{sf['share_id']}_{index}")
                     
                     if st.button("Verify Signature & Decrypt", key=f"btn_{sf['share_id']}_{index}") and receiver_priv_key_file:
-                        dl_resp = requests.get(f"{API_URL}/files/download/{sf['share_id']}", headers=get_auth_headers())
-                        
-                        if dl_resp.status_code == 200:
-                            payload = dl_resp.json()
+                        try:
+                            dl_resp = requests.get(f"{API_URL}/files/download/{sf['share_id']}", headers=get_auth_headers(), timeout=15)
+                            
+                            if dl_resp.status_code == 401:
+                                st.session_state.access_token = None
+                                controller.remove("access_token")
+                                st.toast("Session expired. Please log in again.", icon="⏰")
+                                st.rerun()
+                            elif dl_resp.status_code == 200:
+                                payload = dl_resp.json()
                             
                             try:
                                 enc_file_blob = base64.b64decode(payload["encrypted_file_blob"])
@@ -253,10 +302,13 @@ else:
                             except (ValueError, TypeError) as e:
                                 st.error("🚨 TAMPER WARNING OR WRONG KEY! Signature Verification or Decryption failed.")
                                 st.error(f"Details: {str(e)}")
+                            
+                            except Exception as e:
+                                st.error(f"An unexpected error occurred: {str(e)}")
                         else:
                             st.error("Failed to download payload from server.")
-        else:
-            st.error("Failed to fetch shared files (Check Server Connection).")
+                        except requests.exceptions.RequestException:
+                            st.error("Network error while downloading the file.")
 
     # ----------------- PAGE: ADMIN DASHBOARD -----------------
     elif choice == "Admin Dashboard":
@@ -271,47 +323,71 @@ else:
             with col1:
                 st.subheader("Global Statistics")
                 if st.button("Refresh Stats", key="refresh_stats"):
-                    stats_resp = requests.get(f"{API_URL}/admin/stats", headers=get_auth_headers())
-                    if stats_resp.status_code == 200:
-                        stats = stats_resp.json()
-                        c1, c2 = st.columns(2)
-                        c1.metric("Registered Users", stats["total_users"])
-                        c2.metric("Total Encrypted Files", stats["total_files"])
-                        
-                        c3, c4 = st.columns(2)
-                        c3.metric("Active Shares", stats["total_shares"])
-                        c4.metric("Total Actions", stats["total_actions"])
-                    else:
-                        st.error("Stats disabled for regular users or server error.")
+                    try:
+                        stats_resp = requests.get(f"{API_URL}/admin/stats", headers=get_auth_headers(), timeout=10)
+                        if stats_resp.status_code == 401:
+                            st.session_state.access_token = None
+                            controller.remove("access_token")
+                            st.toast("Session expired. Please log in again.", icon="⏰")
+                            st.rerun()
+                        elif stats_resp.status_code == 200:
+                            stats = stats_resp.json()
+                            c1, c2 = st.columns(2)
+                            c1.metric("Registered Users", stats["total_users"])
+                            c2.metric("Total Encrypted Files", stats["total_files"])
+                            
+                            c3, c4 = st.columns(2)
+                            c3.metric("Active Shares", stats["total_shares"])
+                            c4.metric("Total Actions", stats["total_actions"])
+                        else:
+                            st.error("Stats disabled for regular users or server error.")
+                    except requests.exceptions.RequestException:
+                        st.error("Failed to connect to the backend server to refresh stats.")
             
             with col2:
                 st.subheader("Server File Integrity Matcher")
                 st.info("Scan physical server blobs against their initial upload database hashes to detect backend server tampering.")
                 if st.button("Run Deep Integrity Check"):
-                    int_resp = requests.get(f"{API_URL}/admin/integrity-check", headers=get_auth_headers())
-                    if int_resp.status_code == 200:
-                        report = int_resp.json()
-                        st.write(f"**Total Files Checked Server-Side:** {report['total_files']}")
-                        
-                        if report['compromised_files']:
-                            st.error(f"🚨 ALERT: {len(report['compromised_files'])} file(s) corrupted or modified at rest!")
-                            st.json(report['compromised_files'])
+                    try:
+                        int_resp = requests.get(f"{API_URL}/admin/integrity-check", headers=get_auth_headers(), timeout=30)
+                        if int_resp.status_code == 401:
+                            st.session_state.access_token = None
+                            controller.remove("access_token")
+                            st.toast("Session expired. Please log in again.", icon="⏰")
+                            st.rerun()
+                        elif int_resp.status_code == 200:
+                            report = int_resp.json()
+                            st.write(f"**Total Files Checked Server-Side:** {report['total_files']}")
+                            
+                            if report['compromised_files']:
+                                st.error(f"🚨 ALERT: {len(report['compromised_files'])} file(s) corrupted or modified at rest!")
+                                st.json(report['compromised_files'])
+                            else:
+                                st.success("✅ Safe: All physical files perfectly match their un-tampered encrypted states.")
                         else:
-                            st.success("✅ Safe: All physical files perfectly match their un-tampered encrypted states.")
-                    else:
-                        st.error(f"Integrity check failed. Unauthorized. ({int_resp.status_code})")
+                            st.error(f"Integrity check failed. Unauthorized. ({int_resp.status_code})")
+                    except requests.exceptions.RequestException:
+                         st.error("Failed to connect to the backend server to run integrity check.")
                         
             st.divider()
             st.subheader("System Audit Logs")
             if st.button("Load Recent Audit Trail"):
-                logs_resp = requests.get(f"{API_URL}/admin/logs?limit=50", headers=get_auth_headers())
-                if logs_resp.status_code == 200:
-                    logs = logs_resp.json()
-                    if logs:
-                        df = pd.DataFrame(logs)
-                        df['timestamp'] = pd.to_datetime(df['timestamp']).dt.strftime('%Y-%m-%d %H:%M:%S')
-                        st.dataframe(df[['timestamp', 'action', 'user_id']], use_container_width=True)
+                try:
+                    logs_resp = requests.get(f"{API_URL}/admin/logs?limit=50", headers=get_auth_headers(), timeout=10)
+                    if logs_resp.status_code == 401:
+                        st.session_state.access_token = None
+                        controller.remove("access_token")
+                        st.toast("Session expired. Please log in again.", icon="⏰")
+                        st.rerun()
+                    elif logs_resp.status_code == 200:
+                        logs = logs_resp.json()
+                        if logs:
+                            df = pd.DataFrame(logs)
+                            df['timestamp'] = pd.to_datetime(df['timestamp']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                            st.dataframe(df[['timestamp', 'action', 'user_id']], use_container_width=True)
+                        else:
+                            st.info("No logs present.")
                     else:
-                        st.info("No logs present.")
-                else:
-                    st.error("Failed to load audit trail.")
+                        st.error("Failed to load audit trail.")
+                except requests.exceptions.RequestException:
+                    st.error("Failed to connect to the backend server to load logs.")
