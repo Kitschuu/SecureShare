@@ -138,7 +138,7 @@ if not st.session_state.access_token:
 else:
     # --- AUTHENTICATED STATE: SIDEBAR NAVIGATION ---
     st.sidebar.title(f"Welcome, {st.session_state.username}!")
-    st.sidebar.write(f"**Role:** {st.session_state.role.capitalize()}")
+    st.sidebar.write(f"**Role:** {(st.session_state.role or 'user').capitalize()}")
     st.sidebar.divider()
     
     # Establish Navigation Options Based on Role
