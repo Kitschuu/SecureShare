@@ -24,4 +24,5 @@ env/
 *.html
 *.xml
 *.log
-selenium-screenshot-*.png
+*.png
+*.pem
