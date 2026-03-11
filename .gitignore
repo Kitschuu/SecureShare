@@ -18,3 +18,10 @@ env/
 # IDEs
 .vscode/
 .idea/
+
+# Test
+log.html
+report.html
+output.xml
+*.log
+selenium-screenshot-*.png
