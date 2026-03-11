@@ -27,21 +27,24 @@ cookie_manager = get_manager()
 
 # --- SESSION STATE ---
 # Initialize session state defaults
-if "access_token" not in st.session_state:
-    st.session_state.access_token = None
-if "username" not in st.session_state:
-    st.session_state.username = None
-if "role" not in st.session_state:
-    st.session_state.role = None
+for key in ["access_token", "username", "role", "logout_pending"]:
+    if key not in st.session_state:
+        st.session_state[key] = None
 
-# Streamlit components are asynchronous. On the very first run (refresh), 
-# cookie_manager.get() might return None. When the component mounts and returns the cookie, 
-# it triggers a rerun. We must adopt the cookie if we are currently logged out.
-cookie_token = cookie_manager.get("access_token")
-if cookie_token and not st.session_state.access_token and not st.session_state.get("logout_pending"):
-    st.session_state.access_token = cookie_token
-    st.session_state.username = cookie_manager.get("username")
-    st.session_state.role = cookie_manager.get("role")
+# Streamlit components load asynchronously on the frontend.
+# The very first time the script runs (app refresh), get_all() might technically be empty for a brief moment in Python,
+# but usually extra-streamlit-components handles this by triggering a rerun when the browser sends the cookies over.
+cookies = cookie_manager.get_all()
+
+# If the user has just clicked logout, we shouldn't attempt to restore from cookies.
+if not st.session_state.logout_pending:
+    if "access_token" in cookies and st.session_state.access_token is None:
+        st.session_state.access_token = cookies.get("access_token")
+        st.session_state.username = cookies.get("username")
+        st.session_state.role = cookies.get("role")
+        
+        # We trigger a rerun here so the UI actually registers the auth state change immediately
+        st.rerun()
 
 def get_auth_headers():
     return {"Authorization": f"Bearer {st.session_state.access_token}"}
@@ -89,9 +92,9 @@ if not st.session_state.access_token:
                     st.session_state.role = role
                     st.session_state.logout_pending = False
                     
-                    cookie_manager.set("access_token", token)
-                    cookie_manager.set("username", login_user)
-                    cookie_manager.set("role", role)
+                    cookie_manager.set("access_token", token, key="set_token")
+                    cookie_manager.set("username", login_user, key="set_user")
+                    cookie_manager.set("role", role, key="set_role")
                     
                     st.session_state.login_success = f"Logged in successfully as {login_user}!"
                 else:
@@ -163,9 +166,10 @@ else:
         st.session_state.username = None
         st.session_state.role = None
         
-        cookie_manager.delete("access_token")
-        cookie_manager.delete("username")
-        cookie_manager.delete("role")
+        # Explicit keys to prevent overriding components
+        cookie_manager.delete("access_token", key="del_token")
+        cookie_manager.delete("username", key="del_user")
+        cookie_manager.delete("role", key="del_role")
         
     st.sidebar.button("Logout", on_click=handle_logout)
 
