@@ -21,8 +21,7 @@ env/
 .idea/
 
 # Test
-log.html
-report.html
-output.xml
+*.html
+*.xml
 *.log
 selenium-screenshot-*.png
