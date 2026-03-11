@@ -38,7 +38,7 @@ if "role" not in st.session_state:
 # cookie_manager.get() might return None. When the component mounts and returns the cookie, 
 # it triggers a rerun. We must adopt the cookie if we are currently logged out.
 cookie_token = cookie_manager.get("access_token")
-if cookie_token and not st.session_state.access_token:
+if cookie_token and not st.session_state.access_token and not st.session_state.get("logout_pending"):
     st.session_state.access_token = cookie_token
     st.session_state.username = cookie_manager.get("username")
     st.session_state.role = cookie_manager.get("role")
@@ -71,10 +71,12 @@ if not st.session_state.access_token:
     # ----------------- TAB 1: LOGIN -----------------
     with tab1:
         st.header("Login")
-        login_user = st.text_input("Username", key="login_user")
-        login_pass = st.text_input("Password", type="password", key="login_pass")
+        st.text_input("Username", key="login_user")
+        st.text_input("Password", type="password", key="login_pass")
         
-        if st.button("Login"):
+        def handle_login():
+            login_user = st.session_state.login_user
+            login_pass = st.session_state.login_pass
             try:
                 resp = requests.post(f"{API_URL}/auth/login", data={"username": login_user, "password": login_pass}, timeout=10)
                 if resp.status_code == 200:
@@ -82,25 +84,29 @@ if not st.session_state.access_token:
                     st.session_state.access_token = token
                     st.session_state.username = login_user
                     
-                    # Fetch Role from Token
                     decoded_payload = decode_jwt(token)
                     role = decoded_payload.get("role", "user")
                     st.session_state.role = role
+                    st.session_state.logout_pending = False
                     
-                    # Save to cookies correctly
                     cookie_manager.set("access_token", token)
                     cookie_manager.set("username", login_user)
                     cookie_manager.set("role", role)
                     
-                    # Need to wait for cookie to be set before rerun, 
-                    # but Streamlit Cookies Controller applies it immediately in JS.
-                    st.success(f"Logged in successfully as {login_user}!")
-                    st.rerun()
+                    st.session_state.login_success = f"Logged in successfully as {login_user}!"
                 else:
-                    st.error("Invalid credentials")
-            except requests.exceptions.RequestException as e:
-                st.error("Could not connect to the backend server. Please try again later.")
-                st.toast("Connection Error", icon="🔌")
+                    st.session_state.login_error = "Invalid credentials"
+            except requests.exceptions.RequestException:
+                st.session_state.login_error = "Could not connect to the backend server. Please try again later."
+                
+        st.button("Login", on_click=handle_login)
+        
+        if "login_error" in st.session_state:
+            st.error(st.session_state.login_error)
+            del st.session_state.login_error
+        if "login_success" in st.session_state:
+            st.success(st.session_state.login_success)
+            del st.session_state.login_success
 
     # ----------------- TAB 2: REGISTER -----------------
     with tab2:
@@ -150,21 +156,18 @@ else:
     choice = st.sidebar.radio("Navigation", nav_options)
     
     st.sidebar.divider()
-    if st.sidebar.button("Logout"):
+    
+    def handle_logout():
+        st.session_state.logout_pending = True
         st.session_state.access_token = None
         st.session_state.username = None
         st.session_state.role = None
         
-        # Remove cookies
         cookie_manager.delete("access_token")
         cookie_manager.delete("username")
         cookie_manager.delete("role")
         
-        # Clear out session state immediately so the UI reflects the logged-out state.
-        for key in ["access_token", "username", "role"]:
-            st.session_state.pop(key, None)
-            
-        st.rerun()
+    st.sidebar.button("Logout", on_click=handle_logout)
 
     # ----------------- PAGE: SEND FILE -----------------
     if choice == "Share a File":
