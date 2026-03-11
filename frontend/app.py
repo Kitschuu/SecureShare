@@ -24,10 +24,6 @@ controller = CookieController()
 
 # --- SESSION STATE ---
 # Initialize session state from cookies first, then default
-# Wait for cookies to be ready before proceeding
-if not controller.ready():
-    st.stop()
-    
 if "access_token" not in st.session_state:
     st.session_state.access_token = controller.get("access_token")
 if "username" not in st.session_state:
