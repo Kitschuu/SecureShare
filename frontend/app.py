@@ -265,48 +265,48 @@ else:
                             elif dl_resp.status_code == 200:
                                 payload = dl_resp.json()
                             
-                            try:
-                                enc_file_blob = base64.b64decode(payload["encrypted_file_blob"])
-                                enc_aes_key = base64.b64decode(payload["encrypted_aes_key"])
-                                signature = base64.b64decode(payload["digital_signature"])
-                                
-                                sender_pub_key = RSA.import_key(payload["sender_public_key"])
-                                receiver_priv_key = RSA.import_key(receiver_priv_key_file.read())
-                                
-                                # 1. Verify Digital Signature
-                                file_hash = SHA256.new(enc_file_blob)
-                                pkcs1_15.new(sender_pub_key).verify(file_hash, signature)
-                                st.success("✅ Digital Signature Verified! The file originates from the true sender and hasn't been tampered with.")
-                                
-                                # 2. Decrypt AES Key
-                                cipher_rsa = PKCS1_OAEP.new(receiver_priv_key)
-                                session_key = cipher_rsa.decrypt(enc_aes_key)
-                                
-                                # 3. Decrypt the File
-                                nonce = enc_file_blob[:16]
-                                tag = enc_file_blob[16:32]
-                                ciphertext = enc_file_blob[32:]
-                                
-                                cipher_aes = AES.new(session_key, AES.MODE_GCM, nonce=nonce)
-                                decrypted_data = cipher_aes.decrypt_and_verify(ciphertext, tag)
-                                
-                                st.success("✅ File Decrypted Successfully!")
-                                st.download_button(
-                                    label="⬇️ Download Original File",
-                                    data=decrypted_data,
-                                    file_name=payload["filename"],
-                                    mime="application/octet-stream",
-                                    key=f"dl_{sf['share_id']}_{index}"
-                                )
-                                
-                            except (ValueError, TypeError) as e:
-                                st.error("🚨 TAMPER WARNING OR WRONG KEY! Signature Verification or Decryption failed.")
-                                st.error(f"Details: {str(e)}")
+                                try:
+                                    enc_file_blob = base64.b64decode(payload["encrypted_file_blob"])
+                                    enc_aes_key = base64.b64decode(payload["encrypted_aes_key"])
+                                    signature = base64.b64decode(payload["digital_signature"])
+                                    
+                                    sender_pub_key = RSA.import_key(payload["sender_public_key"])
+                                    receiver_priv_key = RSA.import_key(receiver_priv_key_file.read())
+                                    
+                                    # 1. Verify Digital Signature
+                                    file_hash = SHA256.new(enc_file_blob)
+                                    pkcs1_15.new(sender_pub_key).verify(file_hash, signature)
+                                    st.success("✅ Digital Signature Verified! The file originates from the true sender and hasn't been tampered with.")
+                                    
+                                    # 2. Decrypt AES Key
+                                    cipher_rsa = PKCS1_OAEP.new(receiver_priv_key)
+                                    session_key = cipher_rsa.decrypt(enc_aes_key)
+                                    
+                                    # 3. Decrypt the File
+                                    nonce = enc_file_blob[:16]
+                                    tag = enc_file_blob[16:32]
+                                    ciphertext = enc_file_blob[32:]
+                                    
+                                    cipher_aes = AES.new(session_key, AES.MODE_GCM, nonce=nonce)
+                                    decrypted_data = cipher_aes.decrypt_and_verify(ciphertext, tag)
+                                    
+                                    st.success("✅ File Decrypted Successfully!")
+                                    st.download_button(
+                                        label="⬇️ Download Original File",
+                                        data=decrypted_data,
+                                        file_name=payload["filename"],
+                                        mime="application/octet-stream",
+                                        key=f"dl_{sf['share_id']}_{index}"
+                                    )
+                                    
+                                except (ValueError, TypeError) as e:
+                                    st.error("🚨 TAMPER WARNING OR WRONG KEY! Signature Verification or Decryption failed.")
+                                    st.error(f"Details: {str(e)}")
                             
-                            except Exception as e:
-                                st.error(f"An unexpected error occurred: {str(e)}")
-                        else:
-                            st.error("Failed to download payload from server.")
+                                except Exception as e:
+                                    st.error(f"An unexpected error occurred: {str(e)}")
+                            else:
+                                st.error("Failed to download payload from server.")
                         except requests.exceptions.RequestException:
                             st.error("Network error while downloading the file.")
 

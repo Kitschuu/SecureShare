@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.2 (Python 3.13.12 on win32)" generated="2026-03-11T15:53:41.389509" rpa="false" schemaversion="5">
+<suite id="s1" name="E2EE" source="c:\SecureShare\frontend\tests\E2EE.robot">
+<test id="s1-t1" name="test_register_success" line="12">
+<kw name="Open SecureShare WFE">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2026-03-11T15:53:41.548086" level="INFO">Opening browser 'chrome' to base url 'https://kitschuu-secureshare-frontendapp-lzx4q3.streamlit.app'.</msg>
+<arg>${URL}</arg>
+<arg>${BROWSER}</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2026-03-11T15:53:41.547832" elapsed="8.780521"/>
+</kw>
+<kw name="Maximize Browser Window" owner="SeleniumLibrary">
+<doc>Maximizes current browser window.</doc>
+<status status="PASS" start="2026-03-11T15:53:50.328740" elapsed="0.026829"/>
+</kw>
+<kw name="Set Selenium Implicit Wait" owner="SeleniumLibrary">
+<arg>10s</arg>
+<doc>Sets the implicit wait value used by Selenium.</doc>
+<status status="PASS" start="2026-03-11T15:53:50.355985" elapsed="0.003635"/>
+</kw>
+<status status="PASS" start="2026-03-11T15:53:41.547035" elapsed="8.812965"/>
+</kw>
+<kw name="Close SecureShare WFE">
+<kw name="Close Browser" owner="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-03-11T15:53:50.365073" elapsed="2.247199"/>
+</kw>
+<status status="PASS" start="2026-03-11T15:53:50.363960" elapsed="2.248655"/>
+</kw>
+<status status="PASS" start="2026-03-11T15:53:41.546382" elapsed="11.066953"/>
+</test>
+<status status="PASS" start="2026-03-11T15:53:41.396270" elapsed="11.218817"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="E2EE" id="s1" pass="1" fail="0" skip="0">E2EE</stat>
+</suite>
+</statistics>
+<errors>
+<msg time="2026-03-11T15:53:41.537401" level="ERROR">Error in file 'c:\SecureShare\frontend\tests\E2EE.robot' on line 3: Importing library 'RequestsLibrary' failed: ModuleNotFoundError: No module named 'RequestsLibrary'
+Traceback (most recent call last):
+  None
+PYTHONPATH:
+  c:\Users\bill2\.antigravity\extensions\robocorp.robotframework-lsp-1.13.0-universal\src\robotframework_debug_adapter
+  C:\SecureShare
+  c:\Users\bill2\.antigravity\extensions\robocorp.robotframework-lsp-1.13.0-universal\src
+  c:\Users\bill2\.antigravity\extensions\robocorp.robotframework-lsp-1.13.0-universal\src\robotframework_ls\vendored
+  C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\python313.zip
+  C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\DLLs
+  C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\Lib
+  C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0
+  C:\SecureShare\.venv
+  C:\SecureShare\.venv\Lib\site-packages</msg>
+</errors>
+</robot>
