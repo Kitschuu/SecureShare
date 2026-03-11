@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # Create all database tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="SecureShare API", description="End-to-End Encrypted File Sharing")
+app = FastAPI(title="CipherDrop API", description="End-to-End Encrypted File Sharing")
 
 @app.exception_handler(SQLAlchemyError)
 async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
@@ -38,7 +38,7 @@ app.include_router(admin.router)
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to SecureShare API"}
+    return {"message": "Welcome to CipherDrop API"}
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ load_dotenv()
 # --- API CONFIGURATION ---
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 
-st.set_page_config(page_title="SecureShare - E2EE", layout="wide")
+st.set_page_config(page_title="CipherDrop - E2EE", layout="wide")
 
 # --- COOKIE CONTROLLER ---
 def get_manager():
@@ -70,7 +70,7 @@ def get_auth_headers():
 
 # Moved to top for session state usage
 
-st.title("🔒 SecureShare - Zero Knowledge E2EE File Sharing")
+st.title("🔒 CipherDrop - Zero Knowledge E2EE File Sharing")
 st.markdown("A highly secure, End-to-End Encrypted file sharing platform. Only you and your recipient hold the keys!")
 
 # --- AUTH WALL ---

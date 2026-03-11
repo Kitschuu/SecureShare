@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<robot generator="Robot 7.4.2 (Python 3.13.12 on win32)" generated="2026-03-11T18:09:56.175675" rpa="false" schemaversion="5">
-<suite id="s1" name="E2EE" source="c:\SecureShare\frontend\tests\E2EE.robot">
-<test id="s1-t1" name="test_login_nonexistent_user" line="56">
-<kw name="Open SecureShare WFE">
+<robot generator="Robot 7.4.2 (Python 3.12.10 on win32)" generated="2026-03-12T01:22:31.497796" rpa="false" schemaversion="5">
+<suite id="s1" name="E2E Testcases" source="c:\cyber\SecureShare\frontend\tests\Testcases\E2E_Testcases.robot">
+<test id="s1-t1" name="test_register_success" line="12">
+<kw name="Open SecureShare WFE" owner="E2E_Keywords">
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-03-11T18:09:56.338093" level="INFO">${download_path} = C:\SecureShare\downloads</msg>
+<msg time="2026-03-12T01:22:31.780938" level="INFO">${download_path} = C:\cyber\SecureShare\frontend\tests\Keywords\downloads</msg>
 <var>${download_path}</var>
-<arg>${EXECDIR}${/}downloads</arg>
+<arg>${EXECDIR}${/}frontend${/}tests${/}Keywords${/}downloads</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-03-11T18:09:56.337734" elapsed="0.002079"/>
+<status status="PASS" start="2026-03-12T01:22:31.779932" elapsed="0.024443"/>
 </kw>
 <kw name="Create Directory" owner="OperatingSystem">
-<msg time="2026-03-11T18:09:56.340264" level="INFO" html="true">Directory '&lt;a href="file://C:\SecureShare\downloads"&gt;C:\SecureShare\downloads&lt;/a&gt;' already exists.</msg>
+<msg time="2026-03-12T01:22:31.805887" level="INFO" html="true">Directory '&lt;a href="file://C:\cyber\SecureShare\frontend\tests\Keywords\downloads"&gt;C:\cyber\SecureShare\frontend\tests\Keywords\downloads&lt;/a&gt;' already exists.</msg>
 <arg>${download_path}</arg>
 <doc>Creates the specified directory.</doc>
-<status status="PASS" start="2026-03-11T18:09:56.340014" elapsed="0.000370"/>
+<status status="PASS" start="2026-03-12T01:22:31.805376" elapsed="0.002020"/>
 </kw>
 <kw name="Create Dictionary" owner="BuiltIn">
-<msg time="2026-03-11T18:09:56.340972" level="INFO">${prefs} = {'download.default_directory': 'C:\\SecureShare\\downloads', 'download.prompt_for_download': False, 'directory_upgrade': True}</msg>
+<msg time="2026-03-12T01:22:31.808912" level="INFO">${prefs} = {'download.default_directory': 'C:\\cyber\\SecureShare\\frontend\\tests\\Keywords\\downloads', 'download.prompt_for_download': False, 'directory_upgrade': True}</msg>
 <var>${prefs}</var>
 <arg>download.default_directory=${download_path}</arg>
 <arg>download.prompt_for_download=${False}</arg>
 <arg>directory_upgrade=${True}</arg>
 <doc>Creates and returns a dictionary based on the given ``items``.</doc>
-<status status="PASS" start="2026-03-11T18:09:56.340511" elapsed="0.000538"/>
+<status status="PASS" start="2026-03-12T01:22:31.807396" elapsed="0.001516"/>
 </kw>
 <kw name="Evaluate" owner="BuiltIn">
-<msg time="2026-03-11T18:09:56.344329" level="INFO">${options} = &lt;selenium.webdriver.chrome.options.Options object at 0x00000259267A41A0&gt;</msg>
+<msg time="2026-03-12T01:22:31.856058" level="INFO">${options} = &lt;selenium.webdriver.chrome.options.Options object at 0x000001BFAF3CA5D0&gt;</msg>
 <var>${options}</var>
 <arg>sys.modules['selenium.webdriver'].ChromeOptions()</arg>
 <arg>sys, selenium.webdriver</arg>
 <doc>Evaluates the given expression in Python and returns the result.</doc>
-<status status="PASS" start="2026-03-11T18:09:56.341215" elapsed="0.003210"/>
+<status status="PASS" start="2026-03-12T01:22:31.808912" elapsed="0.047146"/>
 </kw>
 <kw name="Call Method" owner="BuiltIn">
 <arg>${options}</arg>
@@ -39,207 +39,290 @@
 <arg>prefs</arg>
 <arg>${prefs}</arg>
 <doc>Calls the named method of the given object with the provided arguments.</doc>
-<status status="PASS" start="2026-03-11T18:09:56.344548" elapsed="0.000473"/>
+<status status="PASS" start="2026-03-12T01:22:31.856058" elapsed="0.001506"/>
 </kw>
 <kw name="Create Webdriver" owner="SeleniumLibrary">
-<msg time="2026-03-11T18:09:56.352147" level="INFO">Creating an instance of the Chrome WebDriver.</msg>
+<msg time="2026-03-12T01:22:31.951096" level="INFO">Creating an instance of the Chrome WebDriver.</msg>
 <arg>Chrome</arg>
 <arg>options=${options}</arg>
 <doc>Creates an instance of Selenium WebDriver.</doc>
-<status status="PASS" start="2026-03-11T18:09:56.345169" elapsed="0.711053"/>
+<status status="PASS" start="2026-03-12T01:22:31.857564" elapsed="5.111842"/>
 </kw>
 <kw name="Go To" owner="SeleniumLibrary">
-<msg time="2026-03-11T18:09:57.056920" level="INFO">Opening url 'https://kitschuu-secureshare-frontendapp-lzx4q3.streamlit.app'</msg>
+<msg time="2026-03-12T01:22:36.971420" level="INFO">Opening url 'https://kitschuu-secureshare-frontendapp-lzx4q3.streamlit.app'</msg>
 <arg>${URL}</arg>
 <doc>Navigates the current browser window to the provided ``url``.</doc>
-<status status="PASS" start="2026-03-11T18:09:57.056643" elapsed="3.435321"/>
+<status status="PASS" start="2026-03-12T01:22:36.970597" elapsed="6.376811"/>
 </kw>
 <kw name="Maximize Browser Window" owner="SeleniumLibrary">
 <doc>Maximizes current browser window.</doc>
-<status status="PASS" start="2026-03-11T18:10:00.492708" elapsed="0.062058"/>
+<status status="PASS" start="2026-03-12T01:22:43.347408" elapsed="0.056272"/>
 </kw>
 <kw name="Wait Until Page Contains" owner="SeleniumLibrary">
 <arg>SecureShare</arg>
 <doc>Waits until ``text`` appears on the current page.</doc>
-<status status="PASS" start="2026-03-11T18:10:00.555242" elapsed="4.161270"/>
+<status status="PASS" start="2026-03-12T01:22:43.405754" elapsed="2.209609"/>
 </kw>
-<status status="PASS" start="2026-03-11T18:09:56.337078" elapsed="8.379611"/>
+<status status="PASS" start="2026-03-12T01:22:31.778426" elapsed="13.837948"/>
 </kw>
-<kw name="Generate Auto Username">
+<kw name="Generate Auto Username" owner="E2E_Keywords">
 <kw name="Evaluate" owner="BuiltIn">
-<msg time="2026-03-11T18:10:04.718572" level="INFO">${Username} = auto_user_20260311181004</msg>
+<msg time="2026-03-12T01:22:45.618372" level="INFO">${Username} = auto_user_20260312012245</msg>
 <var>${Username}</var>
 <arg>"auto_user_" + datetime.datetime.now().strftime("%Y%m%d%H%M%S")</arg>
 <arg>modules=datetime</arg>
 <doc>Evaluates the given expression in Python and returns the result.</doc>
-<status status="PASS" start="2026-03-11T18:10:04.717577" elapsed="0.001098"/>
+<status status="PASS" start="2026-03-12T01:22:45.618372" elapsed="0.000000"/>
 </kw>
 <kw name="Return From Keyword" owner="BuiltIn">
-<msg time="2026-03-11T18:10:04.719004" level="INFO">Returning from the enclosing user keyword.</msg>
+<msg time="2026-03-12T01:22:45.620337" level="INFO">Returning from the enclosing user keyword.</msg>
 <arg>${Username}</arg>
 <doc>Returns from the enclosing user keyword.</doc>
-<status status="PASS" start="2026-03-11T18:10:04.718817" elapsed="0.000295"/>
+<status status="PASS" start="2026-03-12T01:22:45.618372" elapsed="0.001965"/>
 </kw>
-<msg time="2026-03-11T18:10:04.719281" level="INFO">${Auto_Username} = auto_user_20260311181004</msg>
+<msg time="2026-03-12T01:22:45.620337" level="INFO">${Auto_Username} = auto_user_20260312012245</msg>
 <var>${Auto_Username}</var>
-<status status="PASS" start="2026-03-11T18:10:04.717263" elapsed="0.002083"/>
+<status status="PASS" start="2026-03-12T01:22:45.617368" elapsed="0.005080"/>
 </kw>
-<kw name="Generate Auto Password">
+<kw name="Generate Auto Email" owner="E2E_Keywords">
 <kw name="Evaluate" owner="BuiltIn">
-<msg time="2026-03-11T18:10:04.721188" level="INFO">${Password} = auto_password_20260311181004</msg>
+<msg time="2026-03-12T01:22:45.625373" level="INFO">${Email} = auto_email_20260312012245@gmail.com</msg>
+<var>${Email}</var>
+<arg>"auto_email_" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + "@gmail.com"</arg>
+<arg>modules=datetime</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-03-12T01:22:45.624364" elapsed="0.001009"/>
+</kw>
+<kw name="Return From Keyword" owner="BuiltIn">
+<msg time="2026-03-12T01:22:45.627018" level="INFO">Returning from the enclosing user keyword.</msg>
+<arg>${Email}</arg>
+<doc>Returns from the enclosing user keyword.</doc>
+<status status="PASS" start="2026-03-12T01:22:45.626029" elapsed="0.002503"/>
+</kw>
+<msg time="2026-03-12T01:22:45.630090" level="INFO">${Auto_Email} = auto_email_20260312012245@gmail.com</msg>
+<var>${Auto_Email}</var>
+<status status="PASS" start="2026-03-12T01:22:45.623349" elapsed="0.006741"/>
+</kw>
+<kw name="Generate Auto Password" owner="E2E_Keywords">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-03-12T01:22:45.638386" level="INFO">${Password} = auto_password_20260312012245</msg>
 <var>${Password}</var>
 <arg>"auto_password_" + datetime.datetime.now().strftime("%Y%m%d%H%M%S")</arg>
 <arg>modules=datetime</arg>
 <doc>Evaluates the given expression in Python and returns the result.</doc>
-<status status="PASS" start="2026-03-11T18:10:04.720245" elapsed="0.001086"/>
+<status status="PASS" start="2026-03-12T01:22:45.633275" elapsed="0.008122"/>
 </kw>
 <kw name="Return From Keyword" owner="BuiltIn">
-<msg time="2026-03-11T18:10:04.721788" level="INFO">Returning from the enclosing user keyword.</msg>
+<msg time="2026-03-12T01:22:45.643408" level="INFO">Returning from the enclosing user keyword.</msg>
 <arg>${Password}</arg>
 <doc>Returns from the enclosing user keyword.</doc>
-<status status="PASS" start="2026-03-11T18:10:04.721550" elapsed="0.000339"/>
+<status status="PASS" start="2026-03-12T01:22:45.642397" elapsed="0.001011"/>
 </kw>
-<msg time="2026-03-11T18:10:04.722056" level="INFO">${Auto_Password} = auto_password_20260311181004</msg>
+<msg time="2026-03-12T01:22:45.644511" level="INFO">${Auto_Password} = auto_password_20260312012245</msg>
 <var>${Auto_Password}</var>
-<status status="PASS" start="2026-03-11T18:10:04.719848" elapsed="0.002285"/>
+<status status="PASS" start="2026-03-12T01:22:45.631103" elapsed="0.013408"/>
 </kw>
-<kw name="Login WFE SecureShare">
+<kw name="Set Selenium Speed" owner="SeleniumLibrary">
+<arg>0.20s</arg>
+<doc>Sets the delay that is waited after each Selenium command.</doc>
+<status status="PASS" start="2026-03-12T01:22:45.645909" elapsed="0.003020"/>
+</kw>
+<kw name="Register WFE SecureShare" owner="E2E_Keywords">
 <kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
 <arg>xpath=//iframe[@title="streamlitApp"]</arg>
 <arg>timeout=10s</arg>
 <doc>Waits until the element ``locator`` is visible.</doc>
-<status status="PASS" start="2026-03-11T18:10:04.723331" elapsed="0.032529"/>
+<status status="PASS" start="2026-03-12T01:22:45.653923" elapsed="0.449336"/>
 </kw>
 <kw name="Select Frame" owner="SeleniumLibrary">
-<msg time="2026-03-11T18:10:04.756414" level="INFO">Selecting frame 'xpath=//iframe[@title="streamlitApp"]'.</msg>
+<msg time="2026-03-12T01:22:46.103259" level="INFO">Selecting frame 'xpath=//iframe[@title="streamlitApp"]'.</msg>
 <arg>xpath=//iframe[@title="streamlitApp"]</arg>
 <doc>Sets frame identified by ``locator`` as the current frame.</doc>
-<status status="PASS" start="2026-03-11T18:10:04.756158" elapsed="0.064165"/>
+<status status="PASS" start="2026-03-12T01:22:46.103259" elapsed="0.482194"/>
 </kw>
 <kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
-<arg>xpath=//button[@data-testid="stTab"]//p[text()="Login"]</arg>
+<arg>xpath=//button[@data-testid="stTab"]//p[text()="Register"]</arg>
 <arg>timeout=10s</arg>
 <doc>Waits until the element ``locator`` is visible.</doc>
-<status status="PASS" start="2026-03-11T18:10:04.820698" elapsed="0.030092"/>
+<status status="PASS" start="2026-03-12T01:22:46.585453" elapsed="0.443015"/>
 </kw>
 <kw name="Click Element" owner="SeleniumLibrary">
-<msg time="2026-03-11T18:10:04.851634" level="INFO">Clicking element 'xpath=//button[@data-testid="stTab"]//p[text()="Login"]'.</msg>
-<arg>xpath=//button[@data-testid="stTab"]//p[text()="Login"]</arg>
+<msg time="2026-03-12T01:22:47.028468" level="INFO">Clicking element 'xpath=//button[@data-testid="stTab"]//p[text()="Register"]'.</msg>
+<arg>xpath=//button[@data-testid="stTab"]//p[text()="Register"]</arg>
 <doc>Click the element identified by ``locator``.</doc>
-<status status="PASS" start="2026-03-11T18:10:04.851253" elapsed="0.236836"/>
-</kw>
-<kw name="Sleep" owner="BuiltIn">
-<msg time="2026-03-11T18:10:07.089712" level="INFO">Slept 2 seconds.</msg>
-<arg>2s</arg>
-<doc>Pauses the test executed for the given time.</doc>
-<status status="PASS" start="2026-03-11T18:10:05.088640" elapsed="2.001303"/>
-</kw>
-<kw name="Wait Until Page Contains" owner="SeleniumLibrary">
-<arg>Login</arg>
-<doc>Waits until ``text`` appears on the current page.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.090153" elapsed="0.012699"/>
-</kw>
-<kw name="Wait Until Page Contains" owner="SeleniumLibrary">
-<arg>Username</arg>
-<doc>Waits until ``text`` appears on the current page.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.103118" elapsed="0.013099"/>
-</kw>
-<kw name="Wait Until Page Contains" owner="SeleniumLibrary">
-<arg>Password</arg>
-<doc>Waits until ``text`` appears on the current page.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.116482" elapsed="0.020097"/>
+<status status="PASS" start="2026-03-12T01:22:47.028468" elapsed="0.602230"/>
 </kw>
 <kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
-<arg>xpath=//input[@aria-label="Username"]</arg>
+<arg>xpath=//div[contains(@class, 'st-key-reg_email')]//input</arg>
 <arg>timeout=10s</arg>
 <doc>Waits until the element ``locator`` is visible.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.136798" elapsed="0.022939"/>
+<status status="PASS" start="2026-03-12T01:22:47.631828" elapsed="0.442294"/>
 </kw>
 <kw name="Input Text" owner="SeleniumLibrary">
-<msg time="2026-03-11T18:10:07.160453" level="INFO">Typing text 'auto_user_20260311181004' into text field 'xpath=//input[@aria-label="Username"]'.</msg>
-<arg>xpath=//input[@aria-label="Username"]</arg>
+<msg time="2026-03-12T01:22:48.075265" level="INFO">Typing text 'auto_user_20260312012245' into text field 'xpath=//div[contains(@class, 'st-key-reg_user')]//input'.</msg>
+<arg>xpath=//div[contains(@class, 'st-key-reg_user')]//input</arg>
 <arg>${Username}</arg>
 <doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.160149" elapsed="0.148902"/>
+<status status="PASS" start="2026-03-12T01:22:48.074122" elapsed="0.752090"/>
 </kw>
-<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
-<arg>xpath=//input[@aria-label="Password"]</arg>
-<arg>timeout=10s</arg>
-<doc>Waits until the element ``locator`` is visible.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.309427" elapsed="0.022719"/>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2026-03-12T01:22:48.828726" level="INFO">Typing text 'auto_email_20260312012245@gmail.com' into text field 'xpath=//div[contains(@class, 'st-key-reg_email')]//input'.</msg>
+<arg>xpath=//div[contains(@class, 'st-key-reg_email')]//input</arg>
+<arg>${Email}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2026-03-12T01:22:48.826718" elapsed="0.820380"/>
 </kw>
 <kw name="Input Password" owner="SeleniumLibrary">
-<msg time="2026-03-11T18:10:07.332969" level="INFO">Typing password into text field 'xpath=//input[@aria-label="Password"]'.</msg>
-<msg time="2026-03-11T18:10:07.369374" level="INFO">Temporally setting log level to: NONE</msg>
-<arg>xpath=//input[@aria-label="Password"]</arg>
+<msg time="2026-03-12T01:22:49.648631" level="INFO">Typing password into text field 'xpath=//div[contains(@class, 'st-key-reg_pass')]//input'.</msg>
+<msg time="2026-03-12T01:22:50.140581" level="INFO">Temporally setting log level to: NONE</msg>
+<arg>xpath=//div[contains(@class, 'st-key-reg_pass')]//input</arg>
 <arg>${Password}</arg>
 <doc>Types the given password into the text field identified by ``locator``.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.332566" elapsed="0.146733"/>
+<status status="PASS" start="2026-03-12T01:22:49.647098" elapsed="0.787180"/>
 </kw>
 <kw name="Click Element" owner="SeleniumLibrary">
-<msg time="2026-03-11T18:10:07.480024" level="INFO">Clicking element 'xpath=//div[@data-testid="stButton"]//button[contains(., "Login")]'.</msg>
-<arg>xpath=//div[@data-testid="stButton"]//button[contains(., "Login")]</arg>
+<msg time="2026-03-12T01:22:50.435346" level="INFO">Clicking element 'xpath=//div[@data-testid="stButton"]//button[contains(., "Register")]'.</msg>
+<arg>xpath=//div[@data-testid="stButton"]//button[contains(., "Register")]</arg>
 <doc>Click the element identified by ``locator``.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.479699" elapsed="0.152342"/>
+<status status="PASS" start="2026-03-12T01:22:50.434278" elapsed="0.552106"/>
 </kw>
 <kw name="Unselect Frame" owner="SeleniumLibrary">
 <doc>Sets the main frame as the current frame.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.632541" elapsed="0.007325"/>
+<status status="PASS" start="2026-03-12T01:22:50.986889" elapsed="0.204230"/>
 </kw>
 <arg>${Auto_Username}</arg>
+<arg>${Auto_Email}</arg>
 <arg>${Auto_Password}</arg>
-<status status="PASS" start="2026-03-11T18:10:04.722881" elapsed="2.917213"/>
+<status status="PASS" start="2026-03-12T01:22:45.652930" elapsed="5.538189"/>
 </kw>
-<kw name="Verify Login fail">
+<kw name="Verify Register successfully" owner="E2E_Keywords">
 <kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
 <arg>xpath=//iframe[@title="streamlitApp"]</arg>
 <arg>timeout=10s</arg>
 <doc>Waits until the element ``locator`` is visible.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.641103" elapsed="0.017907"/>
+<status status="PASS" start="2026-03-12T01:22:51.194319" elapsed="0.430262"/>
 </kw>
 <kw name="Select Frame" owner="SeleniumLibrary">
-<msg time="2026-03-11T18:10:07.659543" level="INFO">Selecting frame 'xpath=//iframe[@title="streamlitApp"]'.</msg>
+<msg time="2026-03-12T01:22:51.625128" level="INFO">Selecting frame 'xpath=//iframe[@title="streamlitApp"]'.</msg>
 <arg>xpath=//iframe[@title="streamlitApp"]</arg>
 <doc>Sets frame identified by ``locator`` as the current frame.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.659260" elapsed="0.028142"/>
+<status status="PASS" start="2026-03-12T01:22:51.625128" elapsed="0.440398"/>
 </kw>
 <kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
-<arg>xpath=//div[@data-testid="stAlertContentError"]//p[contains(., "Invalid credentials")]</arg>
+<msg time="2026-03-12T01:23:07.828431" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-1.png"&gt;&lt;img src="selenium-screenshot-1.png" width="800px"&gt;&lt;/a&gt;</msg>
+<msg time="2026-03-12T01:23:07.828431" level="FAIL">Element 'xpath=//div[@data-testid="stAlertContentSuccess"]//p[text()="User registered successfully."]' not visible after 15 seconds.</msg>
+<arg>xpath=//div[@data-testid="stAlertContentSuccess"]//p[text()="User registered successfully."]</arg>
 <arg>timeout=15s</arg>
 <doc>Waits until the element ``locator`` is visible.</doc>
-<status status="PASS" start="2026-03-11T18:10:07.687741" elapsed="0.641855"/>
+<status status="FAIL" start="2026-03-12T01:22:52.066074" elapsed="15.775467">Element 'xpath=//div[@data-testid="stAlertContentSuccess"]//p[text()="User registered successfully."]' not visible after 15 seconds.</status>
 </kw>
 <kw name="Wait Until Page Contains Element" owner="SeleniumLibrary">
-<arg>xpath=//div[@data-testid="stAlertContentError"]//p[contains(., "Invalid credentials")]</arg>
+<arg>xpath=//div[@data-testid="stAlertContentWarning"]//p[contains(text(), "SAVE THIS PRIVATE KEY NOW")]</arg>
 <arg>timeout=5s</arg>
 <doc>Waits until the element ``locator`` appears on the current page.</doc>
-<status status="PASS" start="2026-03-11T18:10:08.329961" elapsed="0.005436"/>
+<status status="NOT RUN" start="2026-03-12T01:23:07.843543" elapsed="0.000000"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>xpath=//div[@data-testid="stDownloadButton"]//button</arg>
+<arg>timeout=5s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="NOT RUN" start="2026-03-12T01:23:07.844540" elapsed="0.000000"/>
+</kw>
+<kw name="Click Element" owner="SeleniumLibrary">
+<arg>xpath=//div[@data-testid="stDownloadButton"]//button</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<status status="NOT RUN" start="2026-03-12T01:23:07.844540" elapsed="0.001006"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" start="2026-03-12T01:23:07.845546" elapsed="0.000000"/>
+</kw>
+<kw name="Verify Downloaded Private Key" owner="E2E_Keywords">
+<arg>${Username}</arg>
+<status status="NOT RUN" start="2026-03-12T01:23:07.846726" elapsed="0.000000"/>
+</kw>
+<kw name="Wait Until Element Is Not Visible" owner="SeleniumLibrary">
+<arg>xpath=//div[@data-testid="stAlertContentSuccess"]//p[text()="User registered successfully."]</arg>
+<arg>timeout=15s</arg>
+<doc>Waits until the element ``locator`` is not visible.</doc>
+<status status="NOT RUN" start="2026-03-12T01:23:07.848910" elapsed="0.000000"/>
+</kw>
+<kw name="Wait Until Page Does Not Contain Element" owner="SeleniumLibrary">
+<arg>xpath=//div[@data-testid="stAlertContentWarning"]//p[contains(text(), "SAVE THIS PRIVATE KEY NOW")]</arg>
+<arg>timeout=5s</arg>
+<doc>Waits until the element ``locator`` disappears from the current page.</doc>
+<status status="NOT RUN" start="2026-03-12T01:23:07.850169" elapsed="0.000000"/>
+</kw>
+<kw name="Wait Until Element Is Not Visible" owner="SeleniumLibrary">
+<arg>xpath=//div[@data-testid="stDownloadButton"]//button</arg>
+<arg>timeout=5s</arg>
+<doc>Waits until the element ``locator`` is not visible.</doc>
+<status status="NOT RUN" start="2026-03-12T01:23:07.851205" elapsed="0.000000"/>
 </kw>
 <kw name="Unselect Frame" owner="SeleniumLibrary">
 <doc>Sets the main frame as the current frame.</doc>
-<status status="PASS" start="2026-03-11T18:10:08.335593" elapsed="0.004523"/>
+<status status="NOT RUN" start="2026-03-12T01:23:07.852254" elapsed="0.000000"/>
 </kw>
-<status status="PASS" start="2026-03-11T18:10:07.640792" elapsed="0.699599"/>
+<arg>${Auto_Username}</arg>
+<status status="FAIL" start="2026-03-12T01:22:51.193308" elapsed="16.660946">Element 'xpath=//div[@data-testid="stAlertContentSuccess"]//p[text()="User registered successfully."]' not visible after 15 seconds.</status>
 </kw>
-<kw name="Close SecureShare WFE">
+<kw name="Login WFE SecureShare" owner="E2E_Keywords">
+<arg>${Auto_Username}</arg>
+<arg>${Auto_Password}</arg>
+<status status="NOT RUN" start="2026-03-12T01:23:07.855762" elapsed="0.000000"/>
+</kw>
+<kw name="Verify User Login successfully" owner="E2E_Keywords">
+<arg>${Auto_Username}</arg>
+<status status="NOT RUN" start="2026-03-12T01:23:07.858576" elapsed="0.001720"/>
+</kw>
+<kw name="Logout WFE SecureShare" owner="E2E_Keywords">
+<status status="NOT RUN" start="2026-03-12T01:23:07.862384" elapsed="0.000000"/>
+</kw>
+<kw name="Close SecureShare WFE" owner="E2E_Keywords">
+<status status="NOT RUN" start="2026-03-12T01:23:07.870080" elapsed="0.000989"/>
+</kw>
+<kw name="Clean Downloaded File" owner="E2E_Keywords" type="TEARDOWN">
+<kw name="Run Keyword And Ignore Error" owner="BuiltIn">
+<kw name="Close SecureShare WFE" owner="E2E_Keywords">
 <kw name="Close Browser" owner="SeleniumLibrary">
 <doc>Closes the current browser.</doc>
-<status status="PASS" start="2026-03-11T18:10:08.341411" elapsed="2.217637"/>
+<status status="PASS" start="2026-03-12T01:23:07.884074" elapsed="2.732214"/>
 </kw>
-<status status="PASS" start="2026-03-11T18:10:08.341008" elapsed="2.218313"/>
+<status status="PASS" start="2026-03-12T01:23:07.883001" elapsed="2.733287"/>
 </kw>
-<status status="PASS" start="2026-03-11T18:09:56.336412" elapsed="14.223565"/>
+<arg>Close SecureShare WFE</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<status status="PASS" start="2026-03-12T01:23:07.877987" elapsed="2.738301"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-03-12T01:23:10.617302" level="INFO">${file_to_delete} = C:\cyber\SecureShare\frontend\tests\Keywords\downloads\auto_user_20260312012245_private_key.pem</msg>
+<var>${file_to_delete}</var>
+<arg>${EXECDIR}${/}frontend${/}tests${/}Keywords${/}downloads${/}${filename}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2026-03-12T01:23:10.616288" elapsed="0.002538"/>
+</kw>
+<kw name="Remove File" owner="OperatingSystem">
+<msg time="2026-03-12T01:23:10.627392" level="INFO" html="true">File '&lt;a href="file://C:\cyber\SecureShare\frontend\tests\Keywords\downloads\auto_user_20260312012245_private_key.pem"&gt;C:\cyber\SecureShare\frontend\tests\Keywords\downloads\auto_user_20260312012245_private_key.pem&lt;/a&gt;' does not exist.</msg>
+<arg>${file_to_delete}</arg>
+<doc>Removes a file with the given path.</doc>
+<status status="PASS" start="2026-03-12T01:23:10.620861" elapsed="0.007550"/>
+</kw>
+<arg>${Auto_Username}_private_key.pem</arg>
+<status status="PASS" start="2026-03-12T01:23:07.875028" elapsed="2.753383"/>
+</kw>
+<status status="FAIL" start="2026-03-12T01:22:31.778426" elapsed="38.852539">Element 'xpath=//div[@data-testid="stAlertContentSuccess"]//p[text()="User registered successfully."]' not visible after 15 seconds.</status>
 </test>
-<status status="PASS" start="2026-03-11T18:09:56.179520" elapsed="14.381978"/>
+<status status="FAIL" start="2026-03-12T01:22:31.518559" elapsed="39.118060"/>
 </suite>
 <statistics>
 <total>
-<stat pass="1" fail="0" skip="0">All Tests</stat>
+<stat pass="0" fail="1" skip="0">All Tests</stat>
 </total>
 <tag>
 </tag>
 <suite>
-<stat name="E2EE" id="s1" pass="1" fail="0" skip="0">E2EE</stat>
+<stat name="E2E Testcases" id="s1" pass="0" fail="1" skip="0">E2E Testcases</stat>
 </suite>
 </statistics>
 <errors>
